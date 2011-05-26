@@ -51,13 +51,13 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
             addr += ":http"
         }
 
-        conn, err = net.Dial("tcp", "", addr)
+        conn, err = net.Dial("tcp", addr)
     case "https":
         if !hasPort(addr) {
             addr += ":https"
         }
 
-        conn, err = tls.Dial("tcp", "", addr)
+        conn, err = tls.Dial("tcp", addr, nil)
     }
     if err != nil {
         return nil, err
@@ -83,13 +83,13 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
 
 func post(url string, oauthHeaders map[string]string) (r *http.Response, err os.Error) {
     var req http.Request
+    var authorization string = "OAuth "
     req.Method = "POST"
     req.ProtoMajor = 1
     req.ProtoMinor = 1
     req.Close = true
-    req.Header = map[string]string{
-        "Authorization": "OAuth ",
-    }
+    req.Header = http.Header{}
+
     req.TransferEncoding = []string{"chunked"}
 
     first := true
@@ -97,10 +97,12 @@ func post(url string, oauthHeaders map[string]string) (r *http.Response, err os.
         if first {
             first = false
         } else {
-            req.Header["Authorization"] += ",\n    "
+            authorization += ",\n    "
         }
-        req.Header["Authorization"] += k+"=\""+v+"\""
+        authorization += k+"=\""+v+"\""
     }
+
+    req.Header.Add("Authorization", authorization)
 
     req.URL, err = http.ParseURL(url)
     if err != nil {
@@ -112,13 +114,12 @@ func post(url string, oauthHeaders map[string]string) (r *http.Response, err os.
 
 func get(url string, oauthHeaders map[string]string) (r *http.Response, err os.Error) {
     var req http.Request
+    var authorization string = "OAuth "
     req.Method = "GET"
     req.ProtoMajor = 1
     req.ProtoMinor = 1
     req.Close = true
-    req.Header = map[string]string{
-        "Authorization": "OAuth ",
-    }
+    req.Header = http.Header{}
     req.TransferEncoding = []string{"chunked"}
 
     first := true
@@ -126,10 +127,12 @@ func get(url string, oauthHeaders map[string]string) (r *http.Response, err os.E
         if first {
             first = false
         } else {
-            req.Header["Authorization"] += ",\n    "
+            authorization += ",\n    "
         }
-        req.Header["Authorization"] += k+"=\""+v+"\""
+        authorization += k+"=\""+v+"\""
     }
+
+    req.Header.Add("Authorization", authorization)
 
     req.URL, err = http.ParseURL(url)
     if err != nil {
