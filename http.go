@@ -10,6 +10,7 @@ import (
     "io"
     "os"
     "strings"
+	"url"
 )
 
 type badStringError struct {
@@ -70,7 +71,7 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
     }
 
     reader := bufio.NewReader(conn)
-    resp, err = http.ReadResponse(reader, req.Method)
+    resp, err = http.ReadResponse(reader, req)
     if err != nil {
         conn.Close()
         return nil, err
@@ -81,7 +82,7 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
     return
 }
 
-func post(url string, oauthHeaders map[string]string) (r *http.Response, err os.Error) {
+func post(theUrl string, oauthHeaders map[string]string) (r *http.Response, err os.Error) {
     var req http.Request
     var authorization string = "OAuth "
     req.Method = "POST"
@@ -104,7 +105,7 @@ func post(url string, oauthHeaders map[string]string) (r *http.Response, err os.
 
     req.Header.Add("Authorization", authorization)
 
-    req.URL, err = http.ParseURL(url)
+    req.URL, err = url.Parse(theUrl)
     if err != nil {
         return nil, err
     }
@@ -112,7 +113,7 @@ func post(url string, oauthHeaders map[string]string) (r *http.Response, err os.
     return send(&req)
 }
 
-func get(url string, oauthHeaders map[string]string) (r *http.Response, err os.Error) {
+func get(theUrl string, oauthHeaders map[string]string) (r *http.Response, err os.Error) {
     var req http.Request
     var authorization string = "OAuth "
     req.Method = "GET"
@@ -134,7 +135,7 @@ func get(url string, oauthHeaders map[string]string) (r *http.Response, err os.E
 
     req.Header.Add("Authorization", authorization)
 
-    req.URL, err = http.ParseURL(url)
+    req.URL, err = url.Parse(theUrl)
     if err != nil {
         return nil, err
     }
